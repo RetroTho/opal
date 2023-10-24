@@ -4,6 +4,10 @@ from dataclasses import dataclass
 
 class TokenType(Enum):
     EXIT = auto()
+    L_PAREN = auto()
+    R_PAREN = auto()
+    INT_LIT = auto()
+    NEW_LINE = auto()
 
 
 @dataclass
@@ -32,7 +36,12 @@ class Tokenizer:
         tokens = []
         while self._peek():
             buffer = ""
-            if self._peek().isalpha():
+            if self._peek() == " " or self._peek() == "\t":
+                self._consume()
+            elif self._peek() == "\n":
+                tokens.append(Token(TokenType.NEW_LINE))
+                self._consume()
+            elif self._peek().isalpha():
                 buffer += self._consume()
                 while self._peek().isalnum():
                     buffer += self._consume()
@@ -41,8 +50,18 @@ class Tokenizer:
                 else:
                     print("Tokenizing Error: unrecognized value '" + buffer + "'")
                     exit()
-            elif self._peek().isspace():
+            elif self._peek().isnumeric():
+                buffer += self._consume()
+                while self._peek().isnumeric():
+                    buffer += self._consume()
+                tokens.append(Token(TokenType.INT_LIT, buffer))
+            elif self._peek() == "(":
+                tokens.append(Token(TokenType.L_PAREN))
                 self._consume()
+            elif self._peek() == ")":
+                tokens.append(Token(TokenType.R_PAREN))
+                self._consume()
+            
             else:
                 print("Tokenizing Error: unrecognized character '" + self._peek() + "'")
                 exit()
