@@ -1,6 +1,7 @@
 import sys
 from modules.tokenizer import Tokenizer
 from modules.parser import Parser
+from modules.generator import Generator
 
 
 def readFile(file_name: str) -> str:
@@ -28,6 +29,7 @@ def compile(file_name: str = ""):
     tokens = Tokenizer(src).tokenize()
     # print(tokens)
     prog = Parser(tokens).parse()
+    output = Generator(prog).generate()
 
 
 if __name__ == "__main__":

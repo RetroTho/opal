@@ -52,7 +52,7 @@ class Parser:
                 return self._tokens[self._index + offset]
         else:
             return None
-    
+
     def _peekType(self, offset: int = 0) -> Token:
         if self._index + offset < len(self._tokens):
             return self._tokens[self._index + offset]
@@ -116,10 +116,7 @@ class Parser:
             else:
                 print("Parsing Error: missing ')'")
                 exit()
-            if (
-                self._peek() == TokenType.NEW_LINE
-                or self._peek() is None
-            ):
+            if self._peek() == TokenType.NEW_LINE or self._peek() is None:
                 if self._peek() is not None:
                     self._consume()
             else:
@@ -130,6 +127,7 @@ class Parser:
             return stmt
         else:
             return None
+
     def _parseProg(self) -> NodeProg:
         prog = NodeProg()
         prog.stmts = []
@@ -141,7 +139,6 @@ class Parser:
                 print("Parsing Error: invalid statement")
                 exit()
         return prog
-    
+
     def parse(self) -> NodeProg:
         return self._parseProg()
-        
