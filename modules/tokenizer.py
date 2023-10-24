@@ -61,7 +61,6 @@ class Tokenizer:
             elif self._peek() == ")":
                 tokens.append(Token(TokenType.R_PAREN))
                 self._consume()
-            
             else:
                 print("Tokenizing Error: unrecognized character '" + self._peek() + "'")
                 exit()

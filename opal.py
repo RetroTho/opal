@@ -1,5 +1,6 @@
 import sys
 from modules.tokenizer import Tokenizer
+from modules.parser import Parser
 
 
 def readFile(file_name: str) -> str:
@@ -25,7 +26,8 @@ def compile(file_name: str = ""):
             print("Error: invalid usage")
             exit()
     tokens = Tokenizer(src).tokenize()
-    print(tokens)
+    # print(tokens)
+    prog = Parser(tokens).parse()
 
 
 if __name__ == "__main__":
