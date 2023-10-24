@@ -17,6 +17,11 @@ def readFile(file_name: str) -> str:
         exit()
 
 
+def writeFile(output: str):
+    with open("out.c", "w") as file:
+        file.write(output)
+
+
 def compile(file_name: str = ""):
     if file_name:
         src = readFile(file_name)
@@ -27,9 +32,9 @@ def compile(file_name: str = ""):
             print("Error: invalid usage")
             exit()
     tokens = Tokenizer(src).tokenize()
-    # print(tokens)
     prog = Parser(tokens).parse()
     output = Generator(prog).generate()
+    writeFile(output)
 
 
 if __name__ == "__main__":

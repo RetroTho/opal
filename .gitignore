@@ -2,3 +2,5 @@
 *.opl
 *.pyc
 *.json
+*.out
+*.c

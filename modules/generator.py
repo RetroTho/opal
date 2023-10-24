@@ -33,7 +33,7 @@ class Generator:
             self._output.append(self._buffer)
 
     def _genProg(self):
-        self._output.append("#include <stdlib.h>")
+        self._output.append("#include <stdlib.h>\n")
         self._output.append("int main(){\n")
         for stmt in self._prog.stmts:
             self._genStmt(stmt)

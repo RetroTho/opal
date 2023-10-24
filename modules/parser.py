@@ -68,7 +68,7 @@ class Parser:
             term_int_lit = NodeTermIntLit()
             term_int_lit.int_lit = self._consume()
             term = NodeTerm()
-            term.var = term_int_lit
+            term.vari = term_int_lit
             return term
         elif self._peek() == TokenType.L_PAREN:
             self._consume()
@@ -84,7 +84,7 @@ class Parser:
             term_paren = NodeTermParen()
             term_paren.expr = expr
             term = NodeTerm()
-            term.var = term_paren
+            term.vari = term_paren
             return term
         else:
             return None
@@ -123,7 +123,7 @@ class Parser:
                 print("Parsing Error: issue ending statement")
                 exit()
             stmt = NodeStmt()
-            stmt.var = stmt_exit
+            stmt.vari = stmt_exit
             return stmt
         else:
             return None
