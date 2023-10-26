@@ -31,9 +31,16 @@ class Generator:
             self._genExpr(stmt_exit.expr)
             self._buffer += ");\n"
             self._output.append(self._buffer)
+        elif isinstance(stmt.vari, NodeStmtPrint):
+            stmt_print = stmt.vari
+            self._buffer += 'printf("%d\\n",'
+            self._genExpr(stmt_print.expr)
+            self._buffer += ");\n"
+            self._output.append(self._buffer)
 
     def _genProg(self):
         self._output.append("#include <stdlib.h>\n")
+        self._output.append("#include <stdio.h>\n")
         self._output.append("int main(){\n")
         for stmt in self._prog.stmts:
             self._genStmt(stmt)

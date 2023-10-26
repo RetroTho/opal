@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 class TokenType(Enum):
     EXIT = auto()
+    PRINT = auto()
     L_PAREN = auto()
     R_PAREN = auto()
     INT_LIT = auto()
@@ -47,6 +48,8 @@ class Tokenizer:
                     buffer += self._consume()
                 if buffer == "exit":
                     tokens.append(Token(TokenType.EXIT))
+                elif buffer == "print":
+                    tokens.append(Token(TokenType.PRINT))
                 else:
                     print("Tokenizing Error: unrecognized value '" + buffer + "'")
                     exit()

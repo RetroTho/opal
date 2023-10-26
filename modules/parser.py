@@ -29,6 +29,11 @@ class NodeStmtExit:
 
 
 @dataclass
+class NodeStmtPrint:
+    expr: NodeExpr = None
+
+
+@dataclass
 class NodeStmt:
     vari: NodeStmtExit = None
 
@@ -103,7 +108,7 @@ class Parser:
             if self._peek() == TokenType.L_PAREN:
                 self._consume()
             else:
-                print("Parsing Error: missing ')'")
+                print("Parsing Error: missing '('")
                 exit()
             stmt_exit = NodeStmtExit()
             expr = self._parseExpr()
@@ -124,6 +129,33 @@ class Parser:
                 exit()
             stmt = NodeStmt()
             stmt.vari = stmt_exit
+            return stmt
+        elif self._peek() == TokenType.PRINT:
+            self._consume()
+            if self._peek() == TokenType.L_PAREN:
+                self._consume()
+            else:
+                print("Parsing Error: missing '('")
+                exit()
+            stmt_print = NodeStmtPrint()
+            expr = self._parseExpr()
+            if expr is None:
+                print("Parsing Error: invalid expression")
+                exit()
+            stmt_print.expr = expr
+            if self._peek() == TokenType.R_PAREN:
+                self._consume()
+            else:
+                print("Parsing Error: missing ')'")
+                exit()
+            if self._peek() == TokenType.NEW_LINE or self._peek() is None:
+                if self._peek() is not None:
+                    self._consume()
+            else:
+                print("Parsing Error: issue ending statement")
+                exit()
+            stmt = NodeStmt()
+            stmt.vari = stmt_print
             return stmt
         else:
             return None
