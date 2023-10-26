@@ -11,6 +11,7 @@ class TokenType(Enum):
     L_PAREN = auto()
     R_PAREN = auto()
     COMMA = auto()
+    EQ = auto()
     INT_LIT = auto()
     NEW_LINE = auto()
 
@@ -73,6 +74,9 @@ class Tokenizer:
                 self._consume()
             elif self._peek() == ",":
                 tokens.append(Token(TokenType.COMMA))
+                self._consume()
+            elif self._peek() == "=":
+                tokens.append(Token(TokenType.EQ))
                 self._consume()
             else:
                 print("Tokenizing Error: unrecognized character '" + self._peek() + "'")

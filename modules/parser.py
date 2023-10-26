@@ -41,6 +41,12 @@ class NodeStmtVariable:
 
 
 @dataclass
+class NodeStmtIdent:
+    ident: Token = None  # IDENT
+    expr: NodeExpr = None
+
+
+@dataclass
 class NodeStmt:
     vari: NodeStmtExit = None
 
@@ -205,6 +211,28 @@ class Parser:
                 exit()
             stmt = NodeStmt()
             stmt.vari = stmt_variable
+            return stmt
+        elif self._peek() == TokenType.IDENT:
+            stmt_ident = NodeStmtIdent()
+            stmt_ident.ident = self._consume()
+            if self._peek() == TokenType.EQ:
+                self._consume()
+            else:
+                print("Parsing Error: unexpected identifier")
+                exit()
+            expr = self._parseExpr()
+            if expr is None:
+                print("Parsing Error: invalid expression")
+                exit()
+            stmt_ident.expr = expr
+            if self._peek() == TokenType.NEW_LINE or self._peek() is None:
+                if self._peek() is not None:
+                    self._consume()
+            else:
+                print("Parsing Error: issue ending statement")
+                exit()
+            stmt = NodeStmt()
+            stmt.vari = stmt_ident
             return stmt
         else:
             return None

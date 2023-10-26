@@ -2,8 +2,10 @@ from modules.parser import *
 
 
 class Generator:
+    _variables = []
     _buffer = ""
     _output = []
+    
 
     def __init__(self, prog: NodeProg):
         self._prog = prog
@@ -39,12 +41,26 @@ class Generator:
             self._output.append(self._buffer)
         elif isinstance(stmt.vari, NodeStmtVariable):
             stmt_variable = stmt.vari
+            if stmt_variable.ident.value in self._variables:
+                print("Generating Error: identifier already declared")
+                exit()
+            else:
+                self._variables.append(stmt_variable.ident.value)
             if stmt_variable.data_type.value == "int":
                 self._buffer += "int "
             self._buffer += stmt_variable.ident.value
             if stmt_variable.expr is not None:
                 self._buffer += "="
                 self._genExpr(stmt_variable.expr)
+            self._buffer += ";\n"
+            self._output.append(self._buffer)
+        elif isinstance(stmt.vari, NodeStmtIdent):
+            stmt_ident = stmt.vari
+            if not stmt_ident.ident.value in self._variables:
+                print("Generating Error: undeclared identifier")
+                exit()
+            self._buffer += stmt_ident.ident.value + "="
+            self._genExpr(stmt_ident.expr)
             self._buffer += ";\n"
             self._output.append(self._buffer)
 
