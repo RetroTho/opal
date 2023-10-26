@@ -3,10 +3,14 @@ from dataclasses import dataclass
 
 
 class TokenType(Enum):
+    VARIABLE = auto()
+    DATA_TYPE = auto()
     EXIT = auto()
     PRINT = auto()
+    IDENT = auto()
     L_PAREN = auto()
     R_PAREN = auto()
+    COMMA = auto()
     INT_LIT = auto()
     NEW_LINE = auto()
 
@@ -50,9 +54,12 @@ class Tokenizer:
                     tokens.append(Token(TokenType.EXIT))
                 elif buffer == "print":
                     tokens.append(Token(TokenType.PRINT))
+                elif buffer == "variable":
+                    tokens.append(Token(TokenType.VARIABLE))
+                elif buffer == "int":
+                    tokens.append(Token(TokenType.DATA_TYPE, buffer))
                 else:
-                    print("Tokenizing Error: unrecognized value '" + buffer + "'")
-                    exit()
+                    tokens.append(Token(TokenType.IDENT, buffer))
             elif self._peek().isnumeric():
                 buffer += self._consume()
                 while self._peek().isnumeric():
@@ -63,6 +70,9 @@ class Tokenizer:
                 self._consume()
             elif self._peek() == ")":
                 tokens.append(Token(TokenType.R_PAREN))
+                self._consume()
+            elif self._peek() == ",":
+                tokens.append(Token(TokenType.COMMA))
                 self._consume()
             else:
                 print("Tokenizing Error: unrecognized character '" + self._peek() + "'")

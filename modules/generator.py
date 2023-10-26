@@ -37,6 +37,16 @@ class Generator:
             self._genExpr(stmt_print.expr)
             self._buffer += ");\n"
             self._output.append(self._buffer)
+        elif isinstance(stmt.vari, NodeStmtVariable):
+            stmt_variable = stmt.vari
+            if stmt_variable.data_type.value == "int":
+                self._buffer += "int "
+            self._buffer += stmt_variable.ident.value
+            if stmt_variable.expr is not None:
+                self._buffer += "="
+                self._genExpr(stmt_variable.expr)
+            self._buffer += ";\n"
+            self._output.append(self._buffer)
 
     def _genProg(self):
         self._output.append("#include <stdlib.h>\n")

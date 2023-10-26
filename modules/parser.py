@@ -34,6 +34,13 @@ class NodeStmtPrint:
 
 
 @dataclass
+class NodeStmtVariable:
+    ident: Token = None  # IDENT
+    data_type: Token = None  # DATA_TYPE
+    expr: NodeExpr = None
+
+
+@dataclass
 class NodeStmt:
     vari: NodeStmtExit = None
 
@@ -156,6 +163,48 @@ class Parser:
                 exit()
             stmt = NodeStmt()
             stmt.vari = stmt_print
+            return stmt
+        elif self._peek() == TokenType.VARIABLE:
+            self._consume()
+            stmt_variable = NodeStmtVariable()
+            if self._peek() == TokenType.IDENT:
+                stmt_variable.ident = self._consume()
+            else:
+                print("Parsing Error: missing identifier")
+                exit()
+            if self._peek() == TokenType.L_PAREN:
+                self._consume()
+            else:
+                print("Parsing Error: missing '('")
+                exit()
+            if self._peek() == TokenType.DATA_TYPE:
+                stmt_variable.data_type = self._consume()
+            else:
+                print("Parsing Error: missing data type")
+                exit()
+            if self._peek() == TokenType.COMMA:
+                self._consume()
+                expr = self._parseExpr()
+                if expr is None:
+                    print("Parsing Error: invalid expression")
+                    exit()
+                stmt_variable.expr = expr
+            elif self._peek() != TokenType.R_PAREN:
+                print("Parsing Error: missing ','")
+                exit()
+            if self._peek() == TokenType.R_PAREN:
+                self._consume()
+            else:
+                print("Parsing Error: missing ')'")
+                exit()
+            if self._peek() == TokenType.NEW_LINE or self._peek() is None:
+                if self._peek() is not None:
+                    self._consume()
+            else:
+                print("Parsing Error: issue ending statement")
+                exit()
+            stmt = NodeStmt()
+            stmt.vari = stmt_variable
             return stmt
         else:
             return None
