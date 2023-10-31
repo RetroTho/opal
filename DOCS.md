@@ -41,8 +41,7 @@ Accurate as of **Oct. 30th, 2023**
 ### String
 
 - A basic string.
-- Use single quotation marks to form a string.
-- No character data type is included, instead a str of length 1 would be used.
+- Use string surrounder to form a string.
 
 #### Ex:
 
