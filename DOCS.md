@@ -1,5 +1,7 @@
 # Opal Documentation
 
+Accurate as of **Oct. 29th, 2023**
+
 ## Built-In Functions
 
 ### Exit

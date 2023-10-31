@@ -79,11 +79,15 @@ class Generator:
                 print("Generating Error: identifier already declared")
                 exit()
             if stmt_variable.data_type.value == "int":
-                self._variables.append(Variable(stmt_variable.ident.value, DataType.INT))
+                self._variables.append(
+                    Variable(stmt_variable.ident.value, DataType.INT)
+                )
                 self._buffer += "int "
                 self._buffer += stmt_variable.ident.value
             elif stmt_variable.data_type.value == "str":
-                self._variables.append(Variable(stmt_variable.ident.value, DataType.STR))
+                self._variables.append(
+                    Variable(stmt_variable.ident.value, DataType.STR)
+                )
                 self._buffer += "char "
                 self._buffer += stmt_variable.ident.value + "[250]"
             if stmt_variable.expr is not None:
