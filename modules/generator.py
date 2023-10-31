@@ -7,11 +7,17 @@ class DataType(Enum):
     STR = auto()
 
 
+@dataclass
+class Variable:
+    name: str
+    type: DataType
+
+
 class Generator:
-    _variables = []
-    _last_data_type = None
-    _buffer = ""
-    _output = []
+    _variables: list[Variable] = []
+    _last_data_type: DataType = None
+    _buffer: str = ""
+    _output: list[str] = []
 
     def __init__(self, prog: NodeProg):
         self._prog = prog
@@ -25,6 +31,17 @@ class Generator:
             term_str_lit = term.vari
             self._buffer += '"' + term_str_lit.str_lit.value + '"'
             self._last_data_type = DataType.STR
+        elif isinstance(term.vari, NodeTermIdent):
+            term_ident = term.vari
+            index = None
+            for i in range(len(self._variables)):
+                if self._variables[i].name == term_ident.ident.value:
+                    index = i
+            if index is None:
+                print("Generating Error: undeclared identifier")
+                exit()
+            self._buffer += term_ident.ident.value
+            self._last_data_type = self._variables[index].type
         elif isinstance(term.vari, NodeTermParen):
             term_paren = term.vari
             self._buffer += "("
@@ -54,15 +71,19 @@ class Generator:
             self._output.append(self._buffer)
         elif isinstance(stmt.vari, NodeStmtVariable):
             stmt_variable = stmt.vari
-            if stmt_variable.ident.value in self._variables:
+            undeclared = True
+            for i in range(len(self._variables)):
+                if self._variables[i].name == stmt_variable.ident.value:
+                    undeclared = False
+            if not undeclared:
                 print("Generating Error: identifier already declared")
                 exit()
-            else:
-                self._variables.append(stmt_variable.ident.value)
             if stmt_variable.data_type.value == "int":
+                self._variables.append(Variable(stmt_variable.ident.value, DataType.INT))
                 self._buffer += "int "
                 self._buffer += stmt_variable.ident.value
             elif stmt_variable.data_type.value == "str":
+                self._variables.append(Variable(stmt_variable.ident.value, DataType.STR))
                 self._buffer += "char "
                 self._buffer += stmt_variable.ident.value + "[250]"
             if stmt_variable.expr is not None:
@@ -72,7 +93,11 @@ class Generator:
             self._output.append(self._buffer)
         elif isinstance(stmt.vari, NodeStmtIdent):
             stmt_ident = stmt.vari
-            if not stmt_ident.ident.value in self._variables:
+            undeclared = True
+            for i in range(len(self._variables)):
+                if self._variables[i].name == stmt_ident.ident.value:
+                    undeclared = False
+            if undeclared:
                 print("Generating Error: undeclared identifier")
                 exit()
             self._buffer += stmt_ident.ident.value + "="

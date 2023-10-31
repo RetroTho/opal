@@ -14,6 +14,11 @@ class NodeTermStrLit:
 
 
 @dataclass
+class NodeTermIdent:
+    ident: Token = None  # Ident
+
+
+@dataclass
 class NodeTermParen:
     expr: NodeExpr = None
 
@@ -98,6 +103,12 @@ class Parser:
             term_str_lit.str_lit = self._consume()
             term = NodeTerm()
             term.vari = term_str_lit
+            return term
+        elif self._peek() == TokenType.IDENT:
+            term_ident = NodeTermIdent()
+            term_ident.ident = self._consume()
+            term = NodeTerm()
+            term.vari = term_ident
             return term
         elif self._peek() == TokenType.L_PAREN:
             self._consume()
