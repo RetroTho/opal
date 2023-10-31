@@ -5,7 +5,6 @@ class Generator:
     _variables = []
     _buffer = ""
     _output = []
-    
 
     def __init__(self, prog: NodeProg):
         self._prog = prog
