@@ -1,8 +1,15 @@
+from enum import Enum, auto
 from modules.parser import *
+
+
+class DataType(Enum):
+    INT = auto()
+    STR = auto()
 
 
 class Generator:
     _variables = []
+    _last_data_type = None
     _buffer = ""
     _output = []
 
@@ -13,6 +20,11 @@ class Generator:
         if isinstance(term.vari, NodeTermIntLit):
             term_int_lit = term.vari
             self._buffer += term_int_lit.int_lit.value
+            self._last_data_type = DataType.INT
+        elif isinstance(term.vari, NodeTermStrLit):
+            term_str_lit = term.vari
+            self._buffer += '"' + term_str_lit.str_lit.value + '"'
+            self._last_data_type = DataType.STR
         elif isinstance(term.vari, NodeTermParen):
             term_paren = term.vari
             self._buffer += "("
@@ -34,9 +46,11 @@ class Generator:
             self._output.append(self._buffer)
         elif isinstance(stmt.vari, NodeStmtPrint):
             stmt_print = stmt.vari
-            self._buffer += 'printf("%d\\n",'
             self._genExpr(stmt_print.expr)
-            self._buffer += ");\n"
+            if self._last_data_type == DataType.INT:
+                self._buffer = 'printf("%d\\n",' + self._buffer + ");\n"
+            elif self._last_data_type == DataType.STR:
+                self._buffer = 'printf("%s\\n",' + self._buffer + ");\n"
             self._output.append(self._buffer)
         elif isinstance(stmt.vari, NodeStmtVariable):
             stmt_variable = stmt.vari
@@ -47,7 +61,10 @@ class Generator:
                 self._variables.append(stmt_variable.ident.value)
             if stmt_variable.data_type.value == "int":
                 self._buffer += "int "
-            self._buffer += stmt_variable.ident.value
+                self._buffer += stmt_variable.ident.value
+            elif stmt_variable.data_type.value == "str":
+                self._buffer += "char "
+                self._buffer += stmt_variable.ident.value + "[250]"
             if stmt_variable.expr is not None:
                 self._buffer += "="
                 self._genExpr(stmt_variable.expr)

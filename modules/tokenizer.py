@@ -13,6 +13,7 @@ class TokenType(Enum):
     COMMA = auto()
     EQ = auto()
     INT_LIT = auto()
+    STR_LIT = auto()
     NEW_LINE = auto()
 
 
@@ -59,6 +60,8 @@ class Tokenizer:
                     tokens.append(Token(TokenType.VARIABLE))
                 elif buffer == "int":
                     tokens.append(Token(TokenType.DATA_TYPE, buffer))
+                elif buffer == "str":
+                    tokens.append(Token(TokenType.DATA_TYPE, buffer))
                 else:
                     tokens.append(Token(TokenType.IDENT, buffer))
             elif self._peek().isnumeric():
@@ -66,6 +69,12 @@ class Tokenizer:
                 while self._peek().isnumeric():
                     buffer += self._consume()
                 tokens.append(Token(TokenType.INT_LIT, buffer))
+            elif self._peek() == "'":
+                self._consume()
+                while self._peek() != "'":
+                    buffer += self._consume()
+                self._consume()
+                tokens.append(Token(TokenType.STR_LIT, buffer))
             elif self._peek() == "(":
                 tokens.append(Token(TokenType.L_PAREN))
                 self._consume()

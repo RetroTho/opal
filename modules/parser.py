@@ -9,13 +9,18 @@ class NodeTermIntLit:
 
 
 @dataclass
+class NodeTermStrLit:
+    str_lit: Token = None  # STR_LIT
+
+
+@dataclass
 class NodeTermParen:
     expr: NodeExpr = None
 
 
 @dataclass
 class NodeTerm:
-    vari: NodeTermIntLit = None
+    vari: NodeTermIntLit | NodeTermStrLit | NodeTermParen = None
 
 
 @dataclass
@@ -88,6 +93,12 @@ class Parser:
             term = NodeTerm()
             term.vari = term_int_lit
             return term
+        elif self._peek() == TokenType.STR_LIT:
+            term_str_lit = NodeTermStrLit()
+            term_str_lit.str_lit = self._consume()
+            term = NodeTerm()
+            term.vari = term_str_lit
+            return term
         elif self._peek() == TokenType.L_PAREN:
             self._consume()
             expr = self._parseExpr()
@@ -125,7 +136,7 @@ class Parser:
                 exit()
             stmt_exit = NodeStmtExit()
             expr = self._parseExpr()
-            if expr is None:
+            if expr is None or not isinstance(expr.vari.vari, NodeTermIntLit):
                 print("Parsing Error: invalid expression")
                 exit()
             stmt_exit.expr = expr
