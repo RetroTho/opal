@@ -1,27 +1,97 @@
 # Opal Documentation
 
-Accurate as of **Oct. 29th, 2023**
+Accurate as of **Oct. 30th, 2023**
 
-## Built-In Functions
+## Surrounders
 
-### Exit
+### Detailer
 
-> **exit**(*int*)
+- Opens with a left parenthesis and closes with a right parenthesis.
+- Holds details of its caster.
+- Details are seperated by commas.
 
-### Print
+#### Ex:
 
-> **print**(*int*)
+> (*detail*)  
+> OR  
+> (*detail1*, *detail2*, ...)
 
-## Declarations
+### String
+
+- Opens and closes with single quotation marks.
+- Holds any characters other than single quotation marks.
+
+#### Ex:
+
+> 'hello'
+
+## Primative Data Types
+
+### Integer
+
+- A basic integer number.
+
+#### Ex:
+
+> **Keyword**  
+> int  
+> **Value**  
+> 10
+
+### String
+
+- A basic string.
+- Use single quotation marks to form a string.
+- No character data type is included, instead a str of length 1 would be used.
+
+#### Ex:
+
+> **Keyword**  
+> str  
+> **Value**  
+> 'hello'
+
+## Binary Operations
+
+### (Re)Assignment
+
+- Used to assign a value to a specified identifier.
+
+#### Ex:
+
+> x = 10  
+> OR  
+> y = 'hello'
+
+## Declaration Initializers
 
 ### Variable
+
+- Used to initialize the declaration of a variable.
+- Should be followed by an identifier, then a detailer.
+
+#### Ex:
 
 > **variable** *ident*(int)  
 > ***OR***  
 > **variable** *ident*(int, *int*)
 
-## Other
+## Built-In Functions
 
-### Variable (Re)Assignment
+### Exit
 
-> *ident* = *int*
+- Exits the program with specified exit value.
+
+#### Ex:
+
+> **exit**(10)
+
+### Print
+
+- Prints given value to console.
+
+#### Ex:
+
+> **print**(10)  
+> OR  
+> **print**('hello')
