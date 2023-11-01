@@ -1,6 +1,6 @@
 # Opal Documentation
 
-Accurate as of **Oct. 30th, 2023**
+Accurate as of **Nov. 1st, 2023**
 
 ## Surrounders
 
@@ -61,6 +61,46 @@ Accurate as of **Oct. 30th, 2023**
 > x = 10  
 > OR  
 > y = 'hello'
+
+### Addition
+
+- Used to add numbers.
+
+#### Ex:
+
+> 2 + 2  
+> OR  
+> 1 + 10 + 100
+
+### Subtraction
+
+- Used to subtract numbers.
+
+#### Ex:
+
+> 2 - 2  
+> OR  
+> 100 - 10 - 1
+
+### Multiplication
+
+- Used to multiply numbers.
+
+#### Ex:
+
+> 2 * 2  
+> OR  
+> 1 * 10 * 100
+
+### Division
+
+- Used to divide numbers.
+
+#### Ex:
+
+> 2 / 2  
+> OR  
+> 100 / 10 / 1
 
 ## Declaration Initializers
 
