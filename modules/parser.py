@@ -29,6 +29,37 @@ class NodeTerm:
 
 
 @dataclass
+class NodeBinaryExprAdd:
+    left: NodeExpr = None
+    right: NodeExpr = None
+
+
+@dataclass
+class NodeBinaryExprSub:
+    left: NodeExpr = None
+    right: NodeExpr = None
+
+
+@dataclass
+class NodeBinaryExprMult:
+    left: NodeExpr = None
+    right: NodeExpr = None
+
+
+@dataclass
+class NodeBinaryExprDiv:
+    left: NodeExpr = None
+    right: NodeExpr = None
+
+
+@dataclass
+class NodeBinaryExpr:
+    vari: NodeBinaryExprAdd | NodeBinaryExprSub | NodeBinaryExprMult | NodeBinaryExprDiv = (
+        None
+    )
+
+
+@dataclass
 class NodeExpr:
     vari: NodeTerm = None
 
@@ -81,15 +112,22 @@ class Parser:
         else:
             return None
 
-    def _peekType(self, offset: int = 0) -> Token:
-        if self._index + offset < len(self._tokens):
-            return self._tokens[self._index + offset]
-        else:
-            return None
-
     def _consume(self) -> Token:
         self._index += 1
         return self._tokens[self._index - 1]
+
+    def _binaryPrece(self, type: TokenType) -> int:
+        match type:
+            case TokenType.PLUS:
+                return 0
+            case TokenType.MINUS:
+                return 0
+            case TokenType.STAR:
+                return 1
+            case TokenType.F_SLASH:
+                return 1
+            case _:
+                return None
 
     def _parseTerm(self) -> NodeTerm:
         if self._peek() == TokenType.INT_LIT:
@@ -129,12 +167,56 @@ class Parser:
         else:
             return None
 
-    def _parseExpr(self) -> NodeExpr:
-        term = self._parseTerm()
-        if term is None:
+    def _parseExpr(self, min_prece: int = 0) -> NodeExpr:
+        term_left = self._parseTerm()
+        if term_left is None:
             return None
         expr = NodeExpr()
-        expr.vari = term
+        expr.vari = term_left
+        while True:
+            curr_token_type = self._peek()
+            if curr_token_type is not None:
+                prece = self._binaryPrece(curr_token_type)
+                if (prece is None) or (prece < min_prece):
+                    break
+            else:
+                break
+            op = self._consume()
+            next_min_prece = prece + 1
+            expr_right = self._parseExpr(next_min_prece)
+            if expr_right is None:
+                print("Parsing Error: invalid expression")
+                exit()
+            binary_expr = NodeBinaryExpr()
+            expr_left = NodeExpr()
+            if op.type == TokenType.PLUS:
+                add = NodeBinaryExprAdd()
+                expr_left.vari = expr.vari
+                add.left = expr_left
+                add.right = expr_right
+                binary_expr.vari = add
+            elif op.type == TokenType.MINUS:
+                sub = NodeBinaryExprSub()
+                expr_left.vari = expr.vari
+                sub.left = expr_left
+                sub.right = expr_right
+                binary_expr.vari = sub
+            elif op.type == TokenType.STAR:
+                mult = NodeBinaryExprMult()
+                expr_left.vari = expr.vari
+                mult.left = expr_left
+                mult.right = expr_right
+                binary_expr.vari = mult
+            elif op.type == TokenType.F_SLASH:
+                div = NodeBinaryExprDiv()
+                expr_left.vari = expr.vari
+                div.left = expr_left
+                div.right = expr_right
+                binary_expr.vari = div
+            else:
+                print("Parsing Error: invalid binary operator")
+                exit()
+            expr.vari = binary_expr
         return expr
 
     def _parseStmt(self) -> NodeStmt:

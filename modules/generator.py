@@ -48,10 +48,35 @@ class Generator:
             self._genExpr(term_paren.expr)
             self._buffer += ")"
 
+    def _genBinaryExpr(self, binary_expr: NodeBinaryExpr):
+        if isinstance(binary_expr.vari, NodeBinaryExprAdd):
+            add = binary_expr.vari
+            self._genExpr(add.left)
+            self._buffer += "+"
+            self._genExpr(add.right)
+        elif isinstance(binary_expr.vari, NodeBinaryExprSub):
+            sub = binary_expr.vari
+            self._genExpr(sub.left)
+            self._buffer += "-"
+            self._genExpr(sub.right)
+        elif isinstance(binary_expr.vari, NodeBinaryExprMult):
+            mult = binary_expr.vari
+            self._genExpr(mult.left)
+            self._buffer += "*"
+            self._genExpr(mult.right)
+        elif isinstance(binary_expr.vari, NodeBinaryExprDiv):
+            div = binary_expr.vari
+            self._genExpr(div.left)
+            self._buffer += "/"
+            self._genExpr(div.right)
+
     def _genExpr(self, expr: NodeExpr):
         if isinstance(expr.vari, NodeTerm):
             term = expr.vari
             self._genTerm(term)
+        elif isinstance(expr.vari, NodeBinaryExpr):
+            binary_expr = expr.vari
+            self._genBinaryExpr(binary_expr)
 
     def _genStmt(self, stmt: NodeStmt):
         self._buffer = ""

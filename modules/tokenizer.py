@@ -12,6 +12,10 @@ class TokenType(Enum):
     R_PAREN = auto()
     COMMA = auto()
     EQ = auto()
+    PLUS = auto()
+    MINUS = auto()
+    STAR = auto()
+    F_SLASH = auto()
     INT_LIT = auto()
     STR_LIT = auto()
     NEW_LINE = auto()
@@ -86,6 +90,18 @@ class Tokenizer:
                 self._consume()
             elif self._peek() == "=":
                 tokens.append(Token(TokenType.EQ))
+                self._consume()
+            elif self._peek() == "+":
+                tokens.append(Token(TokenType.PLUS))
+                self._consume()
+            elif self._peek() == "-":
+                tokens.append(Token(TokenType.MINUS))
+                self._consume()
+            elif self._peek() == "*":
+                tokens.append(Token(TokenType.STAR))
+                self._consume()
+            elif self._peek() == "/":
+                tokens.append(Token(TokenType.F_SLASH))
                 self._consume()
             else:
                 print("Tokenizing Error: unrecognized character '" + self._peek() + "'")
