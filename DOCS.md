@@ -4,6 +4,18 @@ Accurate as of **Nov. 1st, 2023**
 
 ## Surrounders
 
+### Scope
+
+- Opens with a left curly bracket and closes with a right curly bracket.
+- Holds statements.
+
+#### Ex:
+
+> {  
+> *statement1*  
+> *statement2*  
+> }
+
 ### Detailer
 
 - Opens with a left parenthesis and closes with a right parenthesis.
@@ -102,6 +114,16 @@ Accurate as of **Nov. 1st, 2023**
 > OR  
 > 100 / 10 / 1
 
+### Equality
+
+- Used to check equality of numbers.
+
+#### Ex:
+
+> 2 == 2  
+> OR  
+> 10 == 5 + 5
+
 ## Declaration Initializers
 
 ### Variable
@@ -134,3 +156,13 @@ Accurate as of **Nov. 1st, 2023**
 > **print**(10)  
 > OR  
 > **print**('hello')
+
+### If
+
+- Executes scope if an expression evaluates to true.
+
+#### Ex:
+
+> **if**(1 == 1){  
+> *statement*  
+> }
