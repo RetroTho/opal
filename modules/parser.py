@@ -15,7 +15,7 @@ class NodeTermStrLit:
 
 @dataclass
 class NodeTermIdent:
-    ident: Token = None  # Ident
+    ident: Token = None  # IDENT
 
 
 @dataclass
@@ -26,6 +26,12 @@ class NodeTermParen:
 @dataclass
 class NodeTerm:
     vari: NodeTermIntLit | NodeTermStrLit | NodeTermParen = None
+
+
+@dataclass
+class NodeBinaryExprIsEq:
+    left: NodeExpr = None
+    right: NodeExpr = None
 
 
 @dataclass
@@ -75,6 +81,12 @@ class NodeStmtPrint:
 
 
 @dataclass
+class NodeStmtIf:
+    expr: NodeExpr = None
+    scope: NodeScope = None
+
+
+@dataclass
 class NodeStmtVariable:
     ident: Token = None  # IDENT
     data_type: Token = None  # DATA_TYPE
@@ -90,6 +102,11 @@ class NodeStmtIdent:
 @dataclass
 class NodeStmt:
     vari: NodeStmtExit = None
+
+
+@dataclass
+class NodeScope:
+    stmts: list[NodeStmt] = None
 
 
 @dataclass
@@ -118,14 +135,16 @@ class Parser:
 
     def _binaryPrece(self, type: TokenType) -> int:
         match type:
+            case TokenType.EQ_EQ:
+                return 0
             case TokenType.PLUS:
-                return 0
+                return 1
             case TokenType.MINUS:
-                return 0
+                return 1
             case TokenType.STAR:
-                return 1
+                return 2
             case TokenType.F_SLASH:
-                return 1
+                return 2
             case _:
                 return None
 
@@ -189,7 +208,13 @@ class Parser:
                 exit()
             binary_expr = NodeBinaryExpr()
             expr_left = NodeExpr()
-            if op.type == TokenType.PLUS:
+            if op.type == TokenType.EQ_EQ:
+                is_eq = NodeBinaryExprIsEq()
+                expr_left.vari = expr.vari
+                is_eq.left = expr_left
+                is_eq.right = expr_right
+                binary_expr.vari = is_eq
+            elif op.type == TokenType.PLUS:
                 add = NodeBinaryExprAdd()
                 expr_left.vari = expr.vari
                 add.left = expr_left
@@ -218,6 +243,28 @@ class Parser:
                 exit()
             expr.vari = binary_expr
         return expr
+
+    def _parseScope(self) -> NodeScope:
+        if self._peek() == TokenType.L_CURLY:
+            self._consume()
+        else:
+            print("Parsing Error: missing '{'")
+            exit()
+        if self._peek() == TokenType.NEW_LINE:
+            self._consume()
+        scope = NodeScope()
+        scope.stmts = []
+        while True:
+            stmt = self._parseStmt()
+            if stmt is None:
+                break
+            scope.stmts.append(stmt)
+        if self._peek() == TokenType.R_CURLY:
+            self._consume()
+        else:
+            print("Parsing Error: missing '}'")
+            exit()
+        return scope
 
     def _parseStmt(self) -> NodeStmt:
         if self._peek() == TokenType.EXIT:
@@ -273,6 +320,34 @@ class Parser:
                 exit()
             stmt = NodeStmt()
             stmt.vari = stmt_print
+            return stmt
+        elif self._peek() == TokenType.IF:
+            self._consume()
+            if self._peek() == TokenType.L_PAREN:
+                self._consume()
+            else:
+                print("Parsing Error: missing '('")
+                exit()
+            stmt_if = NodeStmtIf()
+            expr = self._parseExpr()
+            if expr is None:
+                print("Parsing Error: invalid expression")
+                exit()
+            stmt_if.expr = expr
+            if self._peek() == TokenType.R_PAREN:
+                self._consume()
+            else:
+                print("Parsing Error: missing ')'")
+                exit()
+            stmt_if.scope = self._parseScope()
+            if self._peek() == TokenType.NEW_LINE or self._peek() is None:
+                if self._peek() is not None:
+                    self._consume()
+            else:
+                print("Parsing Error: issue ending statement")
+                exit()
+            stmt = NodeStmt()
+            stmt.vari = stmt_if
             return stmt
         elif self._peek() == TokenType.VARIABLE:
             self._consume()
@@ -344,9 +419,12 @@ class Parser:
     def _parseProg(self) -> NodeProg:
         prog = NodeProg()
         prog.stmts = []
-        while self._peek() != None:
+        while self._peek() is not None:
+            if self._peek() == TokenType.NEW_LINE:
+                self._consume()
+                continue
             stmt = self._parseStmt()
-            if stmt != None:
+            if stmt is not None:
                 prog.stmts.append(stmt)
             else:
                 print("Parsing Error: invalid statement")

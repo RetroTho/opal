@@ -49,7 +49,12 @@ class Generator:
             self._buffer += ")"
 
     def _genBinaryExpr(self, binary_expr: NodeBinaryExpr):
-        if isinstance(binary_expr.vari, NodeBinaryExprAdd):
+        if isinstance(binary_expr.vari, NodeBinaryExprIsEq):
+            is_eq = binary_expr.vari
+            self._genExpr(is_eq.left)
+            self._buffer += "=="
+            self._genExpr(is_eq.right)
+        elif isinstance(binary_expr.vari, NodeBinaryExprAdd):
             add = binary_expr.vari
             self._genExpr(add.left)
             self._buffer += "+"
@@ -78,6 +83,15 @@ class Generator:
             binary_expr = expr.vari
             self._genBinaryExpr(binary_expr)
 
+    def _genScope(self, scope: NodeScope):
+        vars_length = len(self._variables)
+        self._output.append("{\n")
+        for stmt in scope.stmts:
+            self._genStmt(stmt)
+        self._output.append("}\n")
+        for i in range(len(self._variables) - vars_length):
+            del self._variables[-1]
+
     def _genStmt(self, stmt: NodeStmt):
         self._buffer = ""
         if isinstance(stmt.vari, NodeStmtExit):
@@ -94,6 +108,13 @@ class Generator:
             elif self._last_data_type == DataType.STR:
                 self._buffer = 'printf("%s\\n",' + self._buffer + ");\n"
             self._output.append(self._buffer)
+        elif isinstance(stmt.vari, NodeStmtIf):
+            stmt_if = stmt.vari
+            self._buffer += "if("
+            self._genExpr(stmt_if.expr)
+            self._buffer += ")"
+            self._output.append(self._buffer)
+            self._genScope(stmt_if.scope)
         elif isinstance(stmt.vari, NodeStmtVariable):
             stmt_variable = stmt.vari
             undeclared = True

@@ -7,11 +7,15 @@ class TokenType(Enum):
     DATA_TYPE = auto()
     EXIT = auto()
     PRINT = auto()
+    IF = auto()
     IDENT = auto()
     L_PAREN = auto()
     R_PAREN = auto()
+    L_CURLY = auto()
+    R_CURLY = auto()
     COMMA = auto()
     EQ = auto()
+    EQ_EQ = auto()
     PLUS = auto()
     MINUS = auto()
     STAR = auto()
@@ -60,6 +64,8 @@ class Tokenizer:
                     tokens.append(Token(TokenType.EXIT))
                 elif buffer == "print":
                     tokens.append(Token(TokenType.PRINT))
+                elif buffer == "if":
+                    tokens.append(Token(TokenType.IF))
                 elif buffer == "variable":
                     tokens.append(Token(TokenType.VARIABLE))
                 elif buffer == "int":
@@ -80,29 +86,39 @@ class Tokenizer:
                 self._consume()
                 tokens.append(Token(TokenType.STR_LIT, buffer))
             elif self._peek() == "(":
+                self._consume()
                 tokens.append(Token(TokenType.L_PAREN))
-                self._consume()
             elif self._peek() == ")":
+                self._consume()
                 tokens.append(Token(TokenType.R_PAREN))
+            elif self._peek() == "{":
                 self._consume()
+                tokens.append(Token(TokenType.L_CURLY))
+            elif self._peek() == "}":
+                self._consume()
+                tokens.append(Token(TokenType.R_CURLY))
             elif self._peek() == ",":
+                self._consume()
                 tokens.append(Token(TokenType.COMMA))
-                self._consume()
             elif self._peek() == "=":
-                tokens.append(Token(TokenType.EQ))
                 self._consume()
+                if self._peek() == "=":
+                    self._consume()
+                    tokens.append(Token(TokenType.EQ_EQ))
+                else:
+                    tokens.append(Token(TokenType.EQ))
             elif self._peek() == "+":
+                self._consume()
                 tokens.append(Token(TokenType.PLUS))
-                self._consume()
             elif self._peek() == "-":
+                self._consume()
                 tokens.append(Token(TokenType.MINUS))
-                self._consume()
             elif self._peek() == "*":
+                self._consume()
                 tokens.append(Token(TokenType.STAR))
-                self._consume()
             elif self._peek() == "/":
-                tokens.append(Token(TokenType.F_SLASH))
                 self._consume()
+                tokens.append(Token(TokenType.F_SLASH))
             else:
                 print("Tokenizing Error: unrecognized character '" + self._peek() + "'")
                 exit()
