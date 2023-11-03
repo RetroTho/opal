@@ -85,6 +85,11 @@ class NodeStmtIf:
     expr: NodeExpr = None
     scope: NodeScope = None
 
+@dataclass
+class NodeStmtWhile:
+    expr: NodeExpr = None
+    scope: NodeScope = None
+
 
 @dataclass
 class NodeStmtVariable:
@@ -348,6 +353,34 @@ class Parser:
                 exit()
             stmt = NodeStmt()
             stmt.vari = stmt_if
+            return stmt
+        elif self._peek() == TokenType.WHILE:
+            self._consume()
+            if self._peek() == TokenType.L_PAREN:
+                self._consume()
+            else:
+                print("Parsing Error: missing '('")
+                exit()
+            stmt_while = NodeStmtWhile()
+            expr = self._parseExpr()
+            if expr is None:
+                print("Parsing Error: invalid expression")
+                exit()
+            stmt_while.expr = expr
+            if self._peek() == TokenType.R_PAREN:
+                self._consume()
+            else:
+                print("Parsing Error: missing ')'")
+                exit()
+            stmt_while.scope = self._parseScope()
+            if self._peek() == TokenType.NEW_LINE or self._peek() is None:
+                if self._peek() is not None:
+                    self._consume()
+            else:
+                print("Parsing Error: issue ending statement")
+                exit()
+            stmt = NodeStmt()
+            stmt.vari = stmt_while
             return stmt
         elif self._peek() == TokenType.VARIABLE:
             self._consume()

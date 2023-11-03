@@ -8,6 +8,7 @@ class TokenType(Enum):
     EXIT = auto()
     PRINT = auto()
     IF = auto()
+    WHILE = auto()
     IDENT = auto()
     L_PAREN = auto()
     R_PAREN = auto()
@@ -66,6 +67,8 @@ class Tokenizer:
                     tokens.append(Token(TokenType.PRINT))
                 elif buffer == "if":
                     tokens.append(Token(TokenType.IF))
+                elif buffer == "while":
+                    tokens.append(Token(TokenType.WHILE))
                 elif buffer == "variable":
                     tokens.append(Token(TokenType.VARIABLE))
                 elif buffer == "int":

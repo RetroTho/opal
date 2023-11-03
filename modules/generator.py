@@ -115,6 +115,13 @@ class Generator:
             self._buffer += ")"
             self._output.append(self._buffer)
             self._genScope(stmt_if.scope)
+        elif isinstance(stmt.vari, NodeStmtWhile):
+            stmt_while = stmt.vari
+            self._buffer += "while("
+            self._genExpr(stmt_while.expr)
+            self._buffer += ")"
+            self._output.append(self._buffer)
+            self._genScope(stmt_while.scope)
         elif isinstance(stmt.vari, NodeStmtVariable):
             stmt_variable = stmt.vari
             undeclared = True
