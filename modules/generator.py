@@ -15,7 +15,10 @@ class Variable:
 
 class Generator:
     _variables: list[Variable] = []
+    _scope_variables: list[list[Variable]] = []
     _last_data_type: DataType = None
+    _global_index: int = 2
+    _in_scope: bool = False
     _buffer: str = ""
     _output: list[str] = []
 
@@ -84,13 +87,18 @@ class Generator:
             self._genBinaryExpr(binary_expr)
 
     def _genScope(self, scope: NodeScope):
+        self._in_scope = True
         vars_length = len(self._variables)
         self._output.append("{\n")
         for stmt in scope.stmts:
             self._genStmt(stmt)
         self._output.append("}\n")
+        scope_vars = []
         for i in range(len(self._variables) - vars_length):
+            scope_vars.append(self._variables[-1])
             del self._variables[-1]
+        self._scope_variables.append(scope_vars)
+        self._in_scope = False
 
     def _genStmt(self, stmt: NodeStmt):
         self._buffer = ""
@@ -128,6 +136,11 @@ class Generator:
             for i in range(len(self._variables)):
                 if self._variables[i].name == stmt_variable.ident.value:
                     undeclared = False
+            if not self._in_scope:
+                for scope in self._scope_variables:
+                    for i in range(len(scope)):
+                        if scope[i].name == stmt_variable.ident.value:
+                            undeclared = False
             if not undeclared:
                 print("Generating Error: identifier already declared")
                 exit()
