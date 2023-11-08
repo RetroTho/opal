@@ -1,4 +1,6 @@
+import os
 import sys
+import subprocess
 from modules.tokenizer import Tokenizer
 from modules.parser import Parser
 from modules.generator import Generator
@@ -23,11 +25,19 @@ def writeFile(output: str):
 
 
 def compile(file_name: str = ""):
+    do_gcc = False
     if file_name:
         src = readFile(file_name)
     else:
         if len(sys.argv) == 2:
             src = readFile(sys.argv[1])
+        elif len(sys.argv) == 3:
+            src = readFile(sys.argv[1])
+            if sys.argv[2] == "-c":
+                do_gcc = True
+            else:
+                print("Error: invalid second argument")
+                exit()
         else:
             print("Error: invalid usage")
             exit()
@@ -35,6 +45,9 @@ def compile(file_name: str = ""):
     prog = Parser(tokens).parse()
     output = Generator(prog).generate()
     writeFile(output)
+
+    if do_gcc:
+        subprocess.run(["gcc", os.getcwd() + "/out.c"])
 
 
 if __name__ == "__main__":
