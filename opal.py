@@ -25,7 +25,8 @@ def writeFile(output: str):
 
 
 def compile(file_name: str = ""):
-    do_gcc = False
+    do_c = False
+    do_r = False
     if file_name:
         src = readFile(file_name)
     else:
@@ -34,7 +35,9 @@ def compile(file_name: str = ""):
         elif len(sys.argv) == 3:
             src = readFile(sys.argv[1])
             if sys.argv[2] == "-c":
-                do_gcc = True
+                do_c = True
+            elif sys.argv[2] == "-r":
+                do_r = True
             else:
                 print("Error: invalid second argument")
                 exit()
@@ -46,8 +49,11 @@ def compile(file_name: str = ""):
     output = Generator(prog).generate()
     writeFile(output)
 
-    if do_gcc:
+    if do_c:
         subprocess.run(["gcc", os.getcwd() + "/out.c"])
+    elif do_r:
+        subprocess.run(["gcc", os.getcwd() + "/out.c"])
+        subprocess.run(["rm", os.getcwd() + "/out.c"])
 
 
 if __name__ == "__main__":
