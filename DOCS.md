@@ -1,6 +1,6 @@
 # Opal Documentation
 
-Accurate as of **Nov. 1st, 2023**
+Accurate as of **Nov. 15th, 2023**
 
 ## Surrounders
 
@@ -124,6 +124,26 @@ Accurate as of **Nov. 1st, 2023**
 > OR  
 > 10 == 5 + 5
 
+## Details
+
+### Returns
+
+- Sets the return data type of a function.
+
+#### Ex:
+
+> returns(int)
+
+### Takes
+
+- Sets an argument of a function's identifier and data type.
+
+#### Ex:
+
+> takes(int, *ident*)
+> OR
+> takes(str, *ident*)
+
 ## Declaration Initializers
 
 ### Variable
@@ -137,7 +157,18 @@ Accurate as of **Nov. 1st, 2023**
 > ***OR***  
 > **variable** *ident*(int, *int*)
 
-## Built-In Functions
+### Function
+
+- Used to initialize the declaration of a function.
+- Should be followed by an identifier, then a detailer, and finally a scope.
+
+#### Ex:
+
+> **function** *ident*(*detail1*, *detail2*){  
+> *statement*  
+> }
+
+## Built-In Statements
 
 ### Exit
 
@@ -166,3 +197,31 @@ Accurate as of **Nov. 1st, 2023**
 > **if**(1 == 1){  
 > *statement*  
 > }
+
+### While
+
+- Executes scope while an expression evaluates to true, checking the expression each time at the end of the scope.
+
+#### Ex:
+
+> **while**(1 == 1){  
+> *statement*  
+> }
+
+### Return
+
+- Returns specified value from function and ends function.
+
+#### Ex:
+
+> **return**(10)
+
+### Function Call
+
+- Calls a function.
+
+#### Ex:
+
+> ***ident***()  
+> OR  
+> ***ident***(*arg1*, *arg2*)
