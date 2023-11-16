@@ -13,17 +13,25 @@ class Variable:
     type: DataType
 
 
-class Generator:
-    _variables: list[Variable] = []
-    _scope_variables: list[list[Variable]] = []
-    _last_data_type: DataType = None
-    _global_index: int = 2
-    _in_scope: bool = False
-    _buffer: str = ""
-    _output: list[str] = []
+@dataclass
+class Function:
+    name: str
+    return_type: DataType
+    args: list[Variable]
 
+
+class Generator:
     def __init__(self, prog: NodeProg):
         self._prog = prog
+        self._variables: list[Variable] = []
+        self._scope_variables: list[list[Variable]] = []
+        self._functions: list[Function] = []
+        self._last_data_type: DataType = None
+        self._last_func_data_type: DataType = None
+        self._global_index: int = 2
+        self._in_scope: bool = False
+        self._buffer: str = ""
+        self._output: list[str] = []
 
     def _genTerm(self, term: NodeTerm):
         if isinstance(term.vari, NodeTermIntLit):
@@ -34,17 +42,42 @@ class Generator:
             term_str_lit = term.vari
             self._buffer += '"' + term_str_lit.str_lit.value + '"'
             self._last_data_type = DataType.STR
-        elif isinstance(term.vari, NodeTermIdent):
+        elif isinstance(term.vari, NodeTermVar):
             term_ident = term.vari
             index = None
             for i in range(len(self._variables)):
                 if self._variables[i].name == term_ident.ident.value:
                     index = i
             if index is None:
-                print("Generating Error: undeclared identifier")
+                print("Generating Error: undeclared variable")
                 exit()
             self._buffer += term_ident.ident.value
             self._last_data_type = self._variables[index].type
+        elif isinstance(term.vari, NodeTermFuncCall):
+            term_func_call = term.vari
+            index = None
+            for i in range(len(self._functions)):
+                if self._functions[i].name == term_func_call.ident.value:
+                    index = i
+            if index is None:
+                print("Generating Error: undeclared function")
+                exit()
+            self._buffer += term_func_call.ident.value + "("
+            if len(term_func_call.exprs) != len(self._functions[index].args):
+                print(
+                    "Generating Error: incorrect number of arguments in function call"
+                )
+                exit()
+            for i in range(len(term_func_call.exprs)):
+                self._genExpr(term_func_call.exprs[i])
+                if self._last_data_type != self._functions[index].args[i].type:
+                    print("Generating Error: incorrect argument data type")
+                    exit()
+                if i != len(term_func_call.exprs) - 1:
+                    self._buffer += ","
+            self._buffer += ")"
+            self._last_data_type = self._functions[index].return_type
+
         elif isinstance(term.vari, NodeTermParen):
             term_paren = term.vari
             self._buffer += "("
@@ -108,6 +141,16 @@ class Generator:
             self._genExpr(stmt_exit.expr)
             self._buffer += ");\n"
             self._output.append(self._buffer)
+        elif isinstance(stmt.vari, NodeStmtReturn):
+            stmt_return = stmt.vari
+            self._buffer += "return("
+            self._genExpr(stmt_return.expr)
+            self._buffer += ");\n"
+            if self._last_func_data_type == self._last_data_type:
+                self._output.append(self._buffer)
+            else:
+                print("Generating Error: incorrect return type")
+                exit()
         elif isinstance(stmt.vari, NodeStmtPrint):
             stmt_print = stmt.vari
             self._genExpr(stmt_print.expr)
@@ -160,15 +203,92 @@ class Generator:
                 self._buffer += "="
                 self._genExpr(stmt_variable.expr)
             self._buffer += ";\n"
+            if self._in_scope:
+                self._output.append(self._buffer)
+            else:
+                self._output.insert(self._global_index, self._buffer)
+                self._global_index += 1
+        elif isinstance(stmt.vari, NodeStmtFunction):
+            stmt_function = stmt.vari
+            line_count = len(self._output)
+            var_count = len(self._variables)
+            undeclared = True
+            for i in range(len(self._functions)):
+                if self._functions[i].name == stmt_function.ident.value:
+                    undeclared = False
+            if not undeclared:
+                print("Generating Error: function already declared")
+                exit()
+            returns = None
+            args = []
+            if stmt_function.returns is not None:
+                if stmt_function.returns.vari.data_type.value == "int":
+                    returns = DataType.INT
+                    self._last_func_data_type = DataType.INT
+                    self._buffer += "int "
+                elif stmt_function.returns.vari.data_type.value == "str":
+                    returns = DataType.STR
+                    self._last_func_data_type = DataType.STR
+                    self._buffer += "char* "
+            else:
+                self._buffer += "void "
+            self._buffer += stmt_function.ident.value + "("
+            if stmt_function.takes is not None:
+                for i in range(len(stmt_function.takes)):
+                    if i != 0:
+                        self._buffer += ","
+                    takes_ident = stmt_function.takes[i].vari.ident.value
+                    takes_data_type = None
+                    if stmt_function.takes[i].vari.data_type.value == "int":
+                        takes_data_type = DataType.INT
+                        self._buffer += "int " + takes_ident
+                    elif stmt_function.takes[i].vari.data_type.value == "str":
+                        takes_data_type = DataType.STR
+                        self._buffer += "char* " + takes_ident
+                    args.append(Variable(takes_ident, takes_data_type))
+                    self._variables.append(Variable(takes_ident, takes_data_type))
+            self._functions.append(Function(stmt_function.ident.value, returns, args))
+            self._buffer += ")"
             self._output.append(self._buffer)
-        elif isinstance(stmt.vari, NodeStmtIdent):
+            self._genScope(stmt_function.scope)
+            for i in range(len(self._output) - line_count):
+                self._output.insert(self._global_index, self._output[-1])
+                del self._output[-1]
+            for i in range(len(self._variables) - var_count):
+                del self._variables[-1]
+            self._global_index += len(self._output) - line_count
+        elif isinstance(stmt.vari, NodeStmtFuncCall):
+            stmt_func_call = stmt.vari
+            index = None
+            for i in range(len(self._functions)):
+                if self._functions[i].name == stmt_func_call.ident.value:
+                    index = i
+            if index is None:
+                print("Generating Error: undeclared function")
+                exit()
+            self._buffer += stmt_func_call.ident.value + "("
+            if len(stmt_func_call.exprs) != len(self._functions[index].args):
+                print(
+                    "Generating Error: incorrect number of arguments in function call"
+                )
+                exit()
+            for i in range(len(stmt_func_call.exprs)):
+                self._genExpr(stmt_func_call.exprs[i])
+                if self._last_data_type != self._functions[index].args[i].type:
+                    print("Generating Error: incorrect argument data type")
+                    exit()
+                if i != len(stmt_func_call.exprs) - 1:
+                    self._buffer += ","
+            self._buffer += ");\n"
+            self._output.append(self._buffer)
+        elif isinstance(stmt.vari, NodeStmtVarAssign):
             stmt_ident = stmt.vari
             undeclared = True
             for i in range(len(self._variables)):
                 if self._variables[i].name == stmt_ident.ident.value:
                     undeclared = False
             if undeclared:
-                print("Generating Error: undeclared identifier")
+                print("Generating Error: undeclared variable")
                 exit()
             self._buffer += stmt_ident.ident.value + "="
             self._genExpr(stmt_ident.expr)

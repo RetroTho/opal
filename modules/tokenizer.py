@@ -4,8 +4,12 @@ from dataclasses import dataclass
 
 class TokenType(Enum):
     VARIABLE = auto()
+    FUNCTION = auto()
+    D_RETURNS = auto()
+    D_TAKES = auto()
     DATA_TYPE = auto()
     EXIT = auto()
+    RETURN = auto()
     PRINT = auto()
     IF = auto()
     WHILE = auto()
@@ -33,10 +37,10 @@ class Token:
 
 
 class Tokenizer:
-    _index = 0
 
     def __init__(self, src: str):
         self._src = src
+        self. _index = 0
 
     def _peek(self, offset: int = 0) -> str:
         if self._index + offset < len(self._src):
@@ -63,6 +67,8 @@ class Tokenizer:
                     buffer += self._consume()
                 if buffer == "exit":
                     tokens.append(Token(TokenType.EXIT))
+                elif buffer == "return":
+                    tokens.append(Token(TokenType.RETURN))
                 elif buffer == "print":
                     tokens.append(Token(TokenType.PRINT))
                 elif buffer == "if":
@@ -71,6 +77,12 @@ class Tokenizer:
                     tokens.append(Token(TokenType.WHILE))
                 elif buffer == "variable":
                     tokens.append(Token(TokenType.VARIABLE))
+                elif buffer == "function":
+                    tokens.append(Token(TokenType.FUNCTION))
+                elif buffer == "returns":
+                    tokens.append(Token(TokenType.D_RETURNS))
+                elif buffer == "takes":
+                    tokens.append(Token(TokenType.D_TAKES))
                 elif buffer == "int":
                     tokens.append(Token(TokenType.DATA_TYPE, buffer))
                 elif buffer == "str":

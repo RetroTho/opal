@@ -14,8 +14,14 @@ class NodeTermStrLit:
 
 
 @dataclass
-class NodeTermIdent:
+class NodeTermVar:
     ident: Token = None  # IDENT
+
+
+@dataclass
+class NodeTermFuncCall:
+    ident: Token = None  # IDENT
+    exprs: list[NodeExpr] = None
 
 
 @dataclass
@@ -25,7 +31,9 @@ class NodeTermParen:
 
 @dataclass
 class NodeTerm:
-    vari: NodeTermIntLit | NodeTermStrLit | NodeTermParen = None
+    vari: (
+        NodeTermIntLit | NodeTermStrLit | NodeTermVar | NodeTermFuncCall | NodeTermParen
+    ) = None
 
 
 @dataclass
@@ -60,18 +68,43 @@ class NodeBinaryExprDiv:
 
 @dataclass
 class NodeBinaryExpr:
-    vari: NodeBinaryExprAdd | NodeBinaryExprSub | NodeBinaryExprMult | NodeBinaryExprDiv = (
-        None
-    )
+    vari: (
+        NodeBinaryExprIsEq
+        | NodeBinaryExprAdd
+        | NodeBinaryExprSub
+        | NodeBinaryExprMult
+        | NodeBinaryExprDiv
+    ) = None
 
 
 @dataclass
 class NodeExpr:
-    vari: NodeTerm = None
+    vari: (NodeTerm | NodeBinaryExpr) = None
+
+
+@dataclass
+class NodeDetailReturns:
+    data_type: Token = None  # DATA_TYPE
+
+
+@dataclass
+class NodeDetailTakes:
+    data_type: Token = None  # DATA_TYPE
+    ident: Token = None  # IDENT
+
+
+@dataclass
+class NodeDetail:
+    vari: (NodeDetailReturns | NodeDetailTakes) = None
 
 
 @dataclass
 class NodeStmtExit:
+    expr: NodeExpr = None
+
+
+@dataclass
+class NodeStmtReturn:
     expr: NodeExpr = None
 
 
@@ -84,6 +117,7 @@ class NodeStmtPrint:
 class NodeStmtIf:
     expr: NodeExpr = None
     scope: NodeScope = None
+
 
 @dataclass
 class NodeStmtWhile:
@@ -99,14 +133,38 @@ class NodeStmtVariable:
 
 
 @dataclass
-class NodeStmtIdent:
+class NodeStmtFunction:
+    ident: Token = None  # IDENT
+    takes: list[NodeDetail] = None
+    returns: NodeDetail = None
+    scope: NodeScope = None
+
+
+@dataclass
+class NodeStmtFuncCall:
+    ident: Token = None  # IDENT
+    exprs: list[NodeExpr] = None
+
+
+@dataclass
+class NodeStmtVarAssign:
     ident: Token = None  # IDENT
     expr: NodeExpr = None
 
 
 @dataclass
 class NodeStmt:
-    vari: NodeStmtExit = None
+    vari: (
+        NodeStmtExit
+        | NodeStmtReturn
+        | NodeStmtPrint
+        | NodeStmtIf
+        | NodeStmtWhile
+        | NodeStmtVariable
+        | NodeStmtFunction
+        | NodeStmtFuncCall
+        | NodeStmtVarAssign
+    ) = None
 
 
 @dataclass
@@ -120,12 +178,11 @@ class NodeProg:
 
 
 class Parser:
-    _index = 0
-
     def __init__(self, tokens: list[Token]):
         self._tokens = tokens
+        self._index = 0
 
-    def _peek(self, type: bool = True, offset: int = 0) -> Token | TokenType:
+    def _peek(self, offset: int = 0, type: bool = True) -> Token | TokenType:
         if self._index + offset < len(self._tokens):
             if type:
                 return self._tokens[self._index + offset].type
@@ -167,8 +224,32 @@ class Parser:
             term.vari = term_str_lit
             return term
         elif self._peek() == TokenType.IDENT:
-            term_ident = NodeTermIdent()
-            term_ident.ident = self._consume()
+            if self._peek(1) == TokenType.L_PAREN:
+                term_ident = NodeTermFuncCall()
+                term_ident.ident = self._consume()
+                self._consume()
+                exprs = []
+                expr = self._parseExpr()
+                if expr is not None:
+                    exprs.append(expr)
+                    while self._peek() == TokenType.COMMA:
+                        self._consume()
+                        expr = self._parseExpr()
+                        if expr is not None:
+                            exprs.append(expr)
+                        else:
+                            print("Parsing Error: invalid expression")
+                            exit()
+                term_ident.exprs = exprs
+                if self._peek() == TokenType.R_PAREN:
+                    self._consume()
+                else:
+                    print("Parsing Error: missing ')'")
+                    exit()
+            else:
+                term_ident = NodeTermVar()
+                term_ident.ident = self._consume()
+
             term = NodeTerm()
             term.vari = term_ident
             return term
@@ -249,6 +330,62 @@ class Parser:
             expr.vari = binary_expr
         return expr
 
+    def _parseDetail(self) -> NodeDetail:
+        if self._peek() == TokenType.D_RETURNS:
+            self._consume()
+            if self._peek() == TokenType.L_PAREN:
+                self._consume()
+            else:
+                print("Parsing Error: missing '('")
+                exit()
+            detail_returns = NodeDetailReturns()
+            if self._peek() == TokenType.DATA_TYPE:
+                detail_returns.data_type = self._consume()
+            else:
+                print("Parsing Error: missing data type")
+                exit()
+            if self._peek() == TokenType.R_PAREN:
+                self._consume()
+            else:
+                print("Parsing Error: missing ')'")
+                exit()
+            detail = NodeDetail()
+            detail.vari = detail_returns
+            return detail
+        elif self._peek() == TokenType.D_TAKES:
+            self._consume()
+            if self._peek() == TokenType.L_PAREN:
+                self._consume()
+            else:
+                print("Parsing Error: missing '('")
+                exit()
+            detail_takes = NodeDetailTakes()
+            if self._peek() == TokenType.DATA_TYPE:
+                detail_takes.data_type = self._consume()
+            else:
+                print("Parsing Error: missing data type")
+                exit()
+            if self._peek() == TokenType.COMMA:
+                self._consume()
+            else:
+                print("Parsing Error: missing ','")
+                exit()
+            if self._peek() == TokenType.IDENT:
+                detail_takes.ident = self._consume()
+            else:
+                print("Parsing Error: missing identifier")
+                exit()
+            if self._peek() == TokenType.R_PAREN:
+                self._consume()
+            else:
+                print("Parsing Error: missing ')'")
+                exit()
+            detail = NodeDetail()
+            detail.vari = detail_takes
+            return detail
+        else:
+            return None
+
     def _parseScope(self) -> NodeScope:
         if self._peek() == TokenType.L_CURLY:
             self._consume()
@@ -298,6 +435,33 @@ class Parser:
                 exit()
             stmt = NodeStmt()
             stmt.vari = stmt_exit
+            return stmt
+        elif self._peek() == TokenType.RETURN:
+            self._consume()
+            if self._peek() == TokenType.L_PAREN:
+                self._consume()
+            else:
+                print("Parsing Error: missing '('")
+                exit()
+            stmt_return = NodeStmtReturn()
+            expr = self._parseExpr()
+            if expr is None:
+                print("Parsing Error: invalid expression")
+                exit()
+            stmt_return.expr = expr
+            if self._peek() == TokenType.R_PAREN:
+                self._consume()
+            else:
+                print("Parsing Error: missing ')'")
+                exit()
+            if self._peek() == TokenType.NEW_LINE or self._peek() is None:
+                if self._peek() is not None:
+                    self._consume()
+            else:
+                print("Parsing Error: issue ending statement")
+                exit()
+            stmt = NodeStmt()
+            stmt.vari = stmt_return
             return stmt
         elif self._peek() == TokenType.PRINT:
             self._consume()
@@ -424,19 +588,101 @@ class Parser:
             stmt = NodeStmt()
             stmt.vari = stmt_variable
             return stmt
-        elif self._peek() == TokenType.IDENT:
-            stmt_ident = NodeStmtIdent()
-            stmt_ident.ident = self._consume()
-            if self._peek() == TokenType.EQ:
+        elif self._peek() == TokenType.FUNCTION:
+            self._consume()
+            stmt_function = NodeStmtFunction()
+            if self._peek() == TokenType.IDENT:
+                stmt_function.ident = self._consume()
+            else:
+                print("Parsing Error: missing identifier")
+                exit()
+            if self._peek() == TokenType.L_PAREN:
                 self._consume()
+            else:
+                print("Parsing Error: missing '('")
+                exit()
+            if self._peek() == TokenType.NEW_LINE:
+                self._consume()
+            returns = False
+            first = True
+            while (
+                self._peek() == TokenType.D_RETURNS
+                or self._peek() == TokenType.D_TAKES
+                or self._peek() == TokenType.COMMA
+            ):
+                if first:
+                    first = False
+                else:
+                    if self._peek() == TokenType.COMMA:
+                        self._consume()
+                    else:
+                        print("Parsing Error: missing ','")
+                        exit()
+                    if self._peek() == TokenType.NEW_LINE:
+                        self._consume()
+                if self._peek() == TokenType.D_RETURNS:
+                    if not returns:
+                        stmt_function.returns = self._parseDetail()
+                        returns = True
+                    else:
+                        print("Parsing Error: return type already set")
+                        exit()
+                elif self._peek() == TokenType.D_TAKES:
+                    if stmt_function.takes is None:
+                        stmt_function.takes = []
+                    stmt_function.takes.append(self._parseDetail())
+                if self._peek() == TokenType.NEW_LINE:
+                    self._consume()
+            if self._peek() == TokenType.R_PAREN:
+                self._consume()
+            else:
+                print("Parsing Error: missing ')'")
+                exit()
+            stmt_function.scope = self._parseScope()
+            if self._peek() == TokenType.NEW_LINE or self._peek() is None:
+                if self._peek() is not None:
+                    self._consume()
+            else:
+                print("Parsing Error: issue ending statement")
+                exit()
+            stmt = NodeStmt()
+            stmt.vari = stmt_function
+            return stmt
+        elif self._peek() == TokenType.IDENT:
+            if self._peek(1) == TokenType.EQ:
+                stmt_ident = NodeStmtVarAssign()
+                stmt_ident.ident = self._consume()
+                self._consume()
+                expr = self._parseExpr()
+                if expr is None:
+                    print("Parsing Error: invalid expression")
+                    exit()
+                stmt_ident.expr = expr
+            elif self._peek(1) == TokenType.L_PAREN:
+                stmt_ident = NodeStmtFuncCall()
+                stmt_ident.ident = self._consume()
+                self._consume()
+                exprs = []
+                expr = self._parseExpr()
+                if expr is not None:
+                    exprs.append(expr)
+                    while self._peek() == TokenType.COMMA:
+                        self._consume()
+                        expr = self._parseExpr()
+                        if expr is not None:
+                            exprs.append(expr)
+                        else:
+                            print("Parsing Error: invalid expression")
+                            exit()
+                stmt_ident.exprs = exprs
+                if self._peek() == TokenType.R_PAREN:
+                    self._consume()
+                else:
+                    print("Parsing Error: missing ')'")
+                    exit()
             else:
                 print("Parsing Error: unexpected identifier")
                 exit()
-            expr = self._parseExpr()
-            if expr is None:
-                print("Parsing Error: invalid expression")
-                exit()
-            stmt_ident.expr = expr
             if self._peek() == TokenType.NEW_LINE or self._peek() is None:
                 if self._peek() is not None:
                     self._consume()
