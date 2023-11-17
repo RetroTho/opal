@@ -48,21 +48,6 @@ class ParseFuncs:
         ParseVars.index += 1
         return ParseVars.tokens[ParseVars.index - 1]
 
-    def binaryPrece(type: TokenType) -> int:
-        match type:
-            case TokenType.EQ_EQ:
-                return 0
-            case TokenType.PLUS:
-                return 1
-            case TokenType.MINUS:
-                return 1
-            case TokenType.STAR:
-                return 2
-            case TokenType.F_SLASH:
-                return 2
-            case _:
-                return None
-
 
 class ParseVars:
     tokens: list[Token] = None
