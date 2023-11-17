@@ -1,4 +1,4 @@
-from modules.tokenizer import Token, TokenType
+from modules.tokenize.tokens import *
 from modules.parse.nodes import *
 
 

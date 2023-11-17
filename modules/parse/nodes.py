@@ -1,6 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
-from modules.tokenizer import Token
+from modules.tokenize.tokens import *
 
 
 @dataclass
