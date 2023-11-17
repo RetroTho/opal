@@ -1,142 +1,109 @@
-from enum import Enum, auto
-from dataclasses import dataclass
-
-
-class TokenType(Enum):
-    VARIABLE = auto()
-    FUNCTION = auto()
-    D_RETURNS = auto()
-    D_TAKES = auto()
-    DATA_TYPE = auto()
-    EXIT = auto()
-    RETURN = auto()
-    PRINT = auto()
-    IF = auto()
-    WHILE = auto()
-    IDENT = auto()
-    L_PAREN = auto()
-    R_PAREN = auto()
-    L_CURLY = auto()
-    R_CURLY = auto()
-    COMMA = auto()
-    EQ = auto()
-    EQ_EQ = auto()
-    PLUS = auto()
-    MINUS = auto()
-    STAR = auto()
-    F_SLASH = auto()
-    INT_LIT = auto()
-    STR_LIT = auto()
-    NEW_LINE = auto()
-
-
-@dataclass
-class Token:
-    type: TokenType
-    value: str = None
+from modules.tokenize.common import *
+from modules.tokenize.tokens import *
 
 
 class Tokenizer:
-
     def __init__(self, src: str):
-        self._src = src
-        self. _index = 0
+        TokVars.src = src
+        TokVars.index = 0
 
-    def _peek(self, offset: int = 0) -> str:
-        if self._index + offset < len(self._src):
-            return self._src[self._index + offset]
-        else:
-            return ""
-
-    def _consume(self) -> str:
-        self._index += 1
-        return self._src[self._index - 1]
+    def _matchIsAlpha(self, buffer) -> Token:
+        match buffer:
+            case "exit":
+                return Token(TokenType.EXIT)
+            case "return":
+                return Token(TokenType.RETURN)
+            case "print":
+                return Token(TokenType.PRINT)
+            case "if":
+                return Token(TokenType.IF)
+            case "while":
+                return Token(TokenType.WHILE)
+            case "variable":
+                return Token(TokenType.VARIABLE)
+            case "function":
+                return Token(TokenType.FUNCTION)
+            case "returns":
+                return Token(TokenType.D_RETURNS)
+            case "takes":
+                return Token(TokenType.D_TAKES)
+            case "int":
+                return Token(TokenType.DATA_TYPE, buffer)
+            case "str":
+                return Token(TokenType.DATA_TYPE, buffer)
+            case _:
+                return Token(TokenType.IDENT, buffer)
 
     def tokenize(self) -> list[Token]:
         tokens = []
-        while self._peek():
+        while TokFuncs.peek() is not None:
             buffer = ""
-            if self._peek() == " " or self._peek() == "\t":
-                self._consume()
-            elif self._peek() == "\n":
-                tokens.append(Token(TokenType.NEW_LINE))
-                self._consume()
-            elif self._peek().isalpha():
-                buffer += self._consume()
-                while self._peek().isalnum():
-                    buffer += self._consume()
-                if buffer == "exit":
-                    tokens.append(Token(TokenType.EXIT))
-                elif buffer == "return":
-                    tokens.append(Token(TokenType.RETURN))
-                elif buffer == "print":
-                    tokens.append(Token(TokenType.PRINT))
-                elif buffer == "if":
-                    tokens.append(Token(TokenType.IF))
-                elif buffer == "while":
-                    tokens.append(Token(TokenType.WHILE))
-                elif buffer == "variable":
-                    tokens.append(Token(TokenType.VARIABLE))
-                elif buffer == "function":
-                    tokens.append(Token(TokenType.FUNCTION))
-                elif buffer == "returns":
-                    tokens.append(Token(TokenType.D_RETURNS))
-                elif buffer == "takes":
-                    tokens.append(Token(TokenType.D_TAKES))
-                elif buffer == "int":
-                    tokens.append(Token(TokenType.DATA_TYPE, buffer))
-                elif buffer == "str":
-                    tokens.append(Token(TokenType.DATA_TYPE, buffer))
-                else:
-                    tokens.append(Token(TokenType.IDENT, buffer))
-            elif self._peek().isnumeric():
-                buffer += self._consume()
-                while self._peek().isnumeric():
-                    buffer += self._consume()
-                tokens.append(Token(TokenType.INT_LIT, buffer))
-            elif self._peek() == "'":
-                self._consume()
-                while self._peek() != "'":
-                    buffer += self._consume()
-                self._consume()
-                tokens.append(Token(TokenType.STR_LIT, buffer))
-            elif self._peek() == "(":
-                self._consume()
-                tokens.append(Token(TokenType.L_PAREN))
-            elif self._peek() == ")":
-                self._consume()
-                tokens.append(Token(TokenType.R_PAREN))
-            elif self._peek() == "{":
-                self._consume()
-                tokens.append(Token(TokenType.L_CURLY))
-            elif self._peek() == "}":
-                self._consume()
-                tokens.append(Token(TokenType.R_CURLY))
-            elif self._peek() == ",":
-                self._consume()
-                tokens.append(Token(TokenType.COMMA))
-            elif self._peek() == "=":
-                self._consume()
-                if self._peek() == "=":
-                    self._consume()
-                    tokens.append(Token(TokenType.EQ_EQ))
-                else:
-                    tokens.append(Token(TokenType.EQ))
-            elif self._peek() == "+":
-                self._consume()
-                tokens.append(Token(TokenType.PLUS))
-            elif self._peek() == "-":
-                self._consume()
-                tokens.append(Token(TokenType.MINUS))
-            elif self._peek() == "*":
-                self._consume()
-                tokens.append(Token(TokenType.STAR))
-            elif self._peek() == "/":
-                self._consume()
-                tokens.append(Token(TokenType.F_SLASH))
-            else:
-                print("Tokenizing Error: unrecognized character '" + self._peek() + "'")
-                exit()
+            char = TokFuncs.peek()
+            match char:
+                case " ":
+                    TokFuncs.consume()
+                case "\t":
+                    TokFuncs.consume()
+                case "\n":
+                    TokFuncs.consume()
+                    tokens.append(Token(TokenType.NEW_LINE))
+                case "'":
+                    TokFuncs.consume()
+                    while TokFuncs.peek() != "'":
+                        buffer += TokFuncs.consume()
+                    TokFuncs.consume()
+                    tokens.append(Token(TokenType.STR_LIT, buffer))
+                case "(":
+                    TokFuncs.consume()
+                    tokens.append(Token(TokenType.L_PAREN))
+                case ")":
+                    TokFuncs.consume()
+                    tokens.append(Token(TokenType.R_PAREN))
+                case "{":
+                    TokFuncs.consume()
+                    tokens.append(Token(TokenType.L_CURLY))
+                case "}":
+                    TokFuncs.consume()
+                    tokens.append(Token(TokenType.R_CURLY))
+                case ",":
+                    TokFuncs.consume()
+                    tokens.append(Token(TokenType.COMMA))
+                case "=":
+                    TokFuncs.consume()
+                    if TokFuncs.peek() == "=":
+                        TokFuncs.consume()
+                        tokens.append(Token(TokenType.EQ_EQ))
+                    else:
+                        tokens.append(Token(TokenType.EQ))
+                case "+":
+                    TokFuncs.consume()
+                    tokens.append(Token(TokenType.PLUS))
+                case "-":
+                    TokFuncs.consume()
+                    tokens.append(Token(TokenType.MINUS))
+                case "*":
+                    TokFuncs.consume()
+                    tokens.append(Token(TokenType.STAR))
+                case "/":
+                    TokFuncs.consume()
+                    tokens.append(Token(TokenType.F_SLASH))
+                case _:
+                    if char.isalpha():
+                        buffer += TokFuncs.consume()
+                        while TokFuncs.peek().isalnum():
+                            buffer += TokFuncs.consume()
+                        tokens.append(self._matchIsAlpha(buffer))
+                    elif char.isnumeric():
+                        buffer += TokFuncs.consume()
+                        while TokFuncs.peek().isnumeric():
+                            buffer += TokFuncs.consume()
+                        tokens.append(Token(TokenType.INT_LIT, buffer))
+                    else:
+                        print(
+                            "Tokenizing Error: unrecognized character '"
+                            + TokFuncs.peek()
+                            + "'"
+                        )
+                        exit()
 
-        self._index = 0
         return tokens
