@@ -1,6 +1,7 @@
 from enum import Enum, auto
 from dataclasses import dataclass
 
+
 class DataType(Enum):
     INT = auto()
     STR = auto()
