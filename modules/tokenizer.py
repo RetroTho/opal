@@ -5,7 +5,6 @@ from modules.tokenize.tokens import *
 class Tokenizer:
     def __init__(self, src: str):
         TokVars.src = src
-        TokVars.index = 0
 
     def _matchIsAlpha(self, buffer) -> Token:
         match buffer:
