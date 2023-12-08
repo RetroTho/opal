@@ -8,8 +8,8 @@ class Generator:
         GenVars.prog = prog
 
     def generate(self) -> str:
-        output = ""
+        output_str = ""
         GenCalls.genProg()
         for line in GenVars.output:
-            output += line
-        return output
+            output_str += line
+        return output_str
