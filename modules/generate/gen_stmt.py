@@ -68,8 +68,8 @@ class GenStmt:
                     GenVars.variables.append(
                         Variable(stmt_variable.ident.value, DataType.STR)
                     )
-                    GenVars.buffer += "char "
-                    GenVars.buffer += stmt_variable.ident.value + "[250]"
+                    GenVars.buffer += "char* "
+                    GenVars.buffer += stmt_variable.ident.value
                 if stmt_variable.expr is not None:
                     GenVars.buffer += "="
                     GenCalls.genExpr(stmt_variable.expr)
