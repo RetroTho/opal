@@ -50,7 +50,7 @@ class GenStmt:
                 for i in range(len(GenVars.variables)):
                     if GenVars.variables[i].name == stmt_variable.ident.value:
                         undeclared = False
-                if not GenVars.in_scope:
+                if GenVars.scope_depth == 0:
                     for scope in GenVars.scope_variables:
                         for i in range(len(scope)):
                             if scope[i].name == stmt_variable.ident.value:
@@ -74,7 +74,7 @@ class GenStmt:
                     GenVars.buffer += "="
                     GenCalls.genExpr(stmt_variable.expr)
                 GenVars.buffer += ";\n"
-                if GenVars.in_scope:
+                if GenVars.scope_depth > 0:
                     GenVars.output.append(GenVars.buffer)
                 else:
                     GenVars.output.insert(GenVars.global_index, GenVars.buffer)

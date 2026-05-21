@@ -42,6 +42,6 @@ class GenVars:
     last_data_type: DataType = None
     last_func_data_type: DataType = None
     global_index: int = 2
-    in_scope: bool = False
+    scope_depth: int = 0
     buffer: str = ""
     output: list[str] = []

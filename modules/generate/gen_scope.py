@@ -4,7 +4,7 @@ from modules.generate.common import *
 
 class GenScope:
     def generate(self, scope: NodeScope):
-        GenVars.in_scope = True
+        GenVars.scope_depth += 1
         vars_length = len(GenVars.variables)
         GenVars.output.append("{\n")
         for stmt in scope.stmts:
@@ -15,4 +15,4 @@ class GenScope:
             scope_vars.append(GenVars.variables[-1])
             del GenVars.variables[-1]
         GenVars.scope_variables.append(scope_vars)
-        GenVars.in_scope = False
+        GenVars.scope_depth -= 1
