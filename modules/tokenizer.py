@@ -48,8 +48,11 @@ class Tokenizer:
                     tokens.append(Token(TokenType.NEW_LINE))
                 case "'":
                     TokFuncs.consume()
-                    while TokFuncs.peek() != "'":
+                    while TokFuncs.peek() is not None and TokFuncs.peek() != "'":
                         buffer += TokFuncs.consume()
+                    if TokFuncs.peek() is None:
+                        print("Tokenizing Error: unterminated string literal")
+                        exit()
                     TokFuncs.consume()
                     tokens.append(Token(TokenType.STR_LIT, buffer))
                 case "(":
@@ -89,12 +92,12 @@ class Tokenizer:
                 case _:
                     if char.isalpha():
                         buffer += TokFuncs.consume()
-                        while TokFuncs.peek().isalnum():
+                        while TokFuncs.peek() is not None and TokFuncs.peek().isalnum():
                             buffer += TokFuncs.consume()
                         tokens.append(self._matchIsAlpha(buffer))
                     elif char.isnumeric():
                         buffer += TokFuncs.consume()
-                        while TokFuncs.peek().isnumeric():
+                        while TokFuncs.peek() is not None and TokFuncs.peek().isnumeric():
                             buffer += TokFuncs.consume()
                         tokens.append(Token(TokenType.INT_LIT, buffer))
                     else:
